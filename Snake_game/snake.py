@@ -1,36 +1,64 @@
 from turtle import Turtle
-ALIGNMENT = "center"
-FONT = ("ABBVoice", 16, 'normal')
+MOVE_DISTANCE = 20
+STARTING_POSITION = [(0, 0), (-20, 0), (-40, 0)]
+UP = 90
+DOWN = 270
+LEFT = 180
+RIGHT = 0
 
-class Score(Turtle):
 
+class Snake:
     def __init__(self):
-        super().__init__()
-        self.color("white")
-        self.up()
-        self.ht()
-        self.goto(0, 270)
-        with open("data.txt") as file:
-            self.high_score = int(file.read())
-        self.score = 0
-        self.update_score()
+        self.squares = []
+        self.create_snake()
+        self.head = self.squares[0]
+
+    def create_snake(self):
+        for position in STARTING_POSITION:
+            self.add_segment(position)
+
+    def add_segment(self, position):
+        new_square = Turtle(shape='square')
+        new_square.up()
+        new_square.color("white")
+        new_square.goto(position)
+        self.squares.append(new_square)
+
+    def extend(self):
+        self.add_segment(self.squares[-1].position())
+
+    def move(self):
+        for square in range(len(self.squares) - 1, 0, -1):
+            new_x_position = self.squares[square - 1].xcor()
+            new_y_position = self.squares[square - 1].ycor()
+            self.squares[square].goto(new_x_position, new_y_position)
+        self.head.forward(MOVE_DISTANCE)
 
     def reset(self):
-        if self.score > self.high_score:
-            self.high_score = self.score
-            with open("data.txt", mode="w") as file:
-                file.write(str(self.high_score))
-        self.score = 0
-        self.update_score()
+        for square in self.squares:
+            square.goto(1000, 1000)
+        self.squares.clear()
+        self.create_snake()
+        self.head = self.squares[0]
 
-    def update_score(self):
-        self.clear()
-        self.write(f"Score: {self.score} High score: {self.high_score}", align=ALIGNMENT, font=FONT)
+    def up(self):
+        if self.head.heading() != DOWN:
+            self.head.setheading(UP)
 
-    # def game_over(self):
-    #     self.goto(0, 0)
-    #     self.write("GAME OVER", align=ALIGNMENT, font=FONT)
+    def down(self):
+        if self.head.heading() != UP:
+            self.head.setheading(DOWN)
 
-    def new_score(self):
-        self.score += 1
-        self.update_score()
+    def right(self):
+        if self.head.heading() != LEFT:
+            self.head.setheading(RIGHT)
+
+    def left(self):
+        if self.head.heading() != RIGHT:
+            self.head.setheading(LEFT)
+
+    def reached_boundaries(self):
+        if self.head.xcor() == -300 or self.head.xcor() == 300:
+            return True
+        elif self.head.ycor() == -300 or self.head.ycor() == 300:
+            return True
